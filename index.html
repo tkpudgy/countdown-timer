@@ -39,15 +39,17 @@
         let interval;
         let audioContext;
 
+        document.addEventListener('click', () => {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        });
+
         startBtn.addEventListener('click', () => {
             clearInterval(interval);
             let repCount = parseInt(repetitions.value);
             const maxDelay = parseInt(delay.value);
             const sound = soundSelect.value;
-
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
 
             countdown(repCount, maxDelay, sound);
         });
@@ -81,5 +83,6 @@
             source.start();
         }
     </script>
+
 </body>
 </html>
