@@ -23,6 +23,7 @@
         <select id="sound" name="sound">
             <option value="sound_starter_gun.mp3">Starter Gun</option>
             <option value="sound_clap.mp3">Clap</option>
+            <option value="beep">Beep</option>
         </select>
         <br>
         <button type="button" id="startBtn">Start</button>
@@ -55,7 +56,11 @@
                     timer.textContent = `Countdown: ${randomDelay}`;
                     if (randomDelay <= 0) {
                         clearInterval(interval);
-                        playSound(sound);
+                        if (sound === 'beep') {
+                            playBeep();
+                        } else {
+                            playSound(sound);
+                        }
                         countdown(repCount - 1, maxDelay, sound);
                     }
                 }, 1000);
@@ -65,13 +70,21 @@
         }
 
         function playSound(soundFile) {
-            const audioElement = document.getElementById(`${soundFile}_audio`);
-            audioElement.currentTime = 0;
-            audioElement.play();
+            const audio = new Audio(soundFile);
+            audio.play();
+        }
+
+        function playBeep() {
+            const beep = new AudioContext();
+            const oscillator = beep.createOscillator();
+            oscillator.frequency.value = 440;
+            oscillator.type = 'sine';
+            oscillator.connect(beep.destination);
+            oscillator.start();
+            setTimeout(() => {
+                oscillator.stop();
+            }, 100);
         }
     </script>
-
-    <audio id="sound_starter_gun.mp3_audio" src="sound_starter_gun.mp3" preload="auto"></audio>
-    <audio id="sound_clap.mp3_audio" src="sound_clap.mp3" preload="auto"></audio>
 </body>
 </html>
