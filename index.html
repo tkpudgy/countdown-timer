@@ -37,18 +37,12 @@
         const soundSelect = document.getElementById('sound');
 
         let interval;
-        let audioContext;
 
         startBtn.addEventListener('click', () => {
             clearInterval(interval);
             let repCount = parseInt(repetitions.value);
             const maxDelay = parseInt(delay.value);
             const sound = soundSelect.value;
-
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-
             countdown(repCount, maxDelay, sound);
         });
 
@@ -70,15 +64,9 @@
             }
         }
 
-        async function playSound(soundFile) {
-            const response = await fetch(soundFile);
-            const arrayBuffer = await response.arrayBuffer();
-            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-            const source = audioContext.createBufferSource();
-            source.buffer = audioBuffer;
-            source.connect(audioContext.destination);
-            source.start();
+        function playSound(soundFile) {
+            const audio = new Audio(soundFile);
+            audio.play();
         }
     </script>
 </body>
