@@ -29,62 +29,63 @@
     </form>
     <p id="timer"></p>
 
-    <script>
-        const startBtn = document.getElementById('startBtn');
-        const repetitions = document.getElementById('repetitions');
-        const delay = document.getElementById('delay');
-        const timer = document.getElementById('timer');
-        const soundSelect = document.getElementById('sound');
+<script>
+    const startBtn = document.getElementById('startBtn');
+    const repetitions = document.getElementById('repetitions');
+    const delay = document.getElementById('delay');
+    const timer = document.getElementById('timer');
+    const soundSelect = document.getElementById('sound');
 
-        let interval;
+    let interval;
+    let audioContext;
 
-        startBtn.addEventListener('click', () => {
-            clearInterval(interval);
-            let repCount = parseInt(repetitions.value);
-            const maxDelay = parseInt(delay.value);
-            const sound = soundSelect.value;
+    function initAudioContext() {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
 
-            countdown(repCount, maxDelay, sound);
-        });
+    document.addEventListener('touchstart', initAudioContext);
 
-        async function countdown(repCount, maxDelay, sound) {
-            if (repCount > 0) {
-                let randomDelay = Math.floor(Math.random() * maxDelay) + 1;
+    startBtn.addEventListener('click', () => {
+        initAudioContext();
+        clearInterval(interval);
+        let repCount = parseInt(repetitions.value);
+        const maxDelay = parseInt(delay.value);
+        const sound = soundSelect.value;
+
+        countdown(repCount, maxDelay, sound);
+    });
+
+    async function countdown(repCount, maxDelay, sound) {
+        if (repCount > 0) {
+            let randomDelay = Math.floor(Math.random() * maxDelay) + 1;
+            timer.textContent = `Countdown: ${randomDelay}`;
+            interval = setInterval(async () => {
+                randomDelay--;
                 timer.textContent = `Countdown: ${randomDelay}`;
-                interval = setInterval(async () => {
-                    randomDelay--;
-                    timer.textContent = `Countdown: ${randomDelay}`;
-                    if (randomDelay <= 0) {
-                        clearInterval(interval);
-                        await playSound(sound);
-                        countdown(repCount - 1, maxDelay, sound);
-                    }
-                }, 1000);
-            } else {
-                timer.textContent = "Finished!";
-            }
+                if (randomDelay <= 0) {
+                    clearInterval(interval);
+                    await playSound(sound);
+                    countdown(repCount - 1, maxDelay, sound);
+                }
+            }, 1000);
+        } else {
+            timer.textContent = "Finished!";
         }
+    }
 
-        async function playSound(soundFile) {
-            const audioElement = new Audio(soundFile + '.mp3');
-            const buffer = await fetchArrayBuffer(audioElement.src);
-            const audioBuffer = await audioContext.decodeAudioData(buffer);
+    async function playSound(soundFile) {
+        const response = await fetch(soundFile + '.mp3');
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
-            const source = audioContext.createBufferSource();
-            source.buffer = audioBuffer;
-            source.connect(audioContext.destination);
-            source.start();
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        source.start();
+    }
+</script>
 
-            return new Promise(resolve => {
-                source.addEventListener('ended', resolve);
-            });
-        }
-
-        async function fetchArrayBuffer(url) {
-            const response = await fetch(url);
-            const arrayBuffer = await response.arrayBuffer();
-            return arrayBuffer;
-        }
-    </script>
 </body>
 </html>
