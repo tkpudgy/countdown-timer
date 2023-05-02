@@ -28,8 +28,6 @@
         <button type="button" id="startBtn">Start</button>
     </form>
     <p id="timer"></p>
-    <audio id="sound_starter_gun_audio" src="starter_gun.mp3" preload="auto"></audio>
-    <audio id="sound_clap_audio" src="clap.mp3" preload="auto"></audio>
 
     <script>
         const startBtn = document.getElementById('startBtn');
@@ -49,16 +47,16 @@
             countdown(repCount, maxDelay, sound);
         });
 
-        function countdown(repCount, maxDelay, sound) {
+        async function countdown(repCount, maxDelay, sound) {
             if (repCount > 0) {
                 let randomDelay = Math.floor(Math.random() * maxDelay) + 1;
                 timer.textContent = `Countdown: ${randomDelay}`;
-                interval = setInterval(() => {
+                interval = setInterval(async () => {
                     randomDelay--;
                     timer.textContent = `Countdown: ${randomDelay}`;
                     if (randomDelay <= 0) {
                         clearInterval(interval);
-                        playSound(sound);
+                        await playSound(sound);
                         countdown(repCount - 1, maxDelay, sound);
                     }
                 }, 1000);
@@ -67,10 +65,25 @@
             }
         }
 
-        function playSound(soundFile) {
-            const audioElement = document.getElementById(`${soundFile}_audio`);
-            audioElement.currentTime = 0;
-            audioElement.play();
+        async function playSound(soundFile) {
+            const audioElement = new Audio(soundFile + '.mp3');
+            const buffer = await fetchArrayBuffer(audioElement.src);
+            const audioBuffer = await audioContext.decodeAudioData(buffer);
+
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioContext.destination);
+            source.start();
+
+            return new Promise(resolve => {
+                source.addEventListener('ended', resolve);
+            });
+        }
+
+        async function fetchArrayBuffer(url) {
+            const response = await fetch(url);
+            const arrayBuffer = await response.arrayBuffer();
+            return arrayBuffer;
         }
     </script>
 </body>
