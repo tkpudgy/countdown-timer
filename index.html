@@ -9,6 +9,9 @@
             display: inline-block;
             width: 150px;
         }
+        #hiddenBtn {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -21,16 +24,18 @@
         <br>
         <label for="sound">Sound:</label>
         <select id="sound" name="sound">
-            <option value="sound_starter_gun.mp3">Starter Gun</option>
-            <option value="sound_clap.mp3">Clap</option>
+            <option value="starter_gun.mp3">Starter Gun</option>
+            <option value="clap.mp3">Clap</option>
         </select>
         <br>
         <button type="button" id="startBtn">Start</button>
     </form>
+    <button type="button" id="hiddenBtn">Hidden</button>
     <p id="timer"></p>
 
     <script>
         const startBtn = document.getElementById('startBtn');
+        const hiddenBtn = document.getElementById('hiddenBtn');
         const repetitions = document.getElementById('repetitions');
         const delay = document.getElementById('delay');
         const timer = document.getElementById('timer');
@@ -55,7 +60,7 @@
                     timer.textContent = `Countdown: ${randomDelay}`;
                     if (randomDelay <= 0) {
                         clearInterval(interval);
-                        playSound(sound);
+                        hiddenBtn.click(); // Simulate click event on the hidden button
                         countdown(repCount - 1, maxDelay, sound);
                     }
                 }, 1000);
@@ -68,6 +73,10 @@
             const audio = new Audio(soundFile);
             audio.play();
         }
+
+        hiddenBtn.addEventListener('click', () => {
+            playSound(soundSelect.value);
+        });
     </script>
 </body>
 </html>
