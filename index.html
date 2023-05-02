@@ -21,8 +21,8 @@
         <br>
         <label for="sound">Sound:</label>
         <select id="sound" name="sound">
-            <option value="sound_starter_gun.mp3">Starter Gun</option>
-            <option value="sound_clap.mp3">Clap</option>
+            <option value="starter_gun.mp3">Starter Gun</option>
+            <option value="clap.mp3">Clap</option>
         </select>
         <br>
         <button type="button" id="startBtn">Start</button>
@@ -37,12 +37,17 @@
         const soundSelect = document.getElementById('sound');
 
         let interval;
+        let audioContext;
 
         startBtn.addEventListener('click', () => {
             clearInterval(interval);
             let repCount = parseInt(repetitions.value);
             const maxDelay = parseInt(delay.value);
             const sound = soundSelect.value;
+
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
 
             countdown(repCount, maxDelay, sound);
         });
@@ -65,14 +70,16 @@
             }
         }
 
-        function playSound(soundFile) {
-            const audioElement = document.getElementById(`${soundFile}_audio`);
-            audioElement.currentTime = 0;
-            audioElement.play();
+        async function playSound(soundFile) {
+            const response = await fetch(soundFile);
+            const arrayBuffer = await response.arrayBuffer();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioContext.destination);
+            source.start();
         }
     </script>
-    <audio id="sound_starter_gun.mp3_audio" src="sound_starter_gun.mp3" preload="auto"></audio>
-    <audio id="sound_clap.mp3_audio" src="sound_clap.mp3" preload="auto"></audio>
-
 </body>
 </html>
