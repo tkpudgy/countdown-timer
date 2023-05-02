@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown Timer</title>
+    <style>
+        label {
+            display: inline-block;
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <form>
+        <label for="repetitions">Number of repetitions:</label>
+        <input type="number" id="repetitions" name="repetitions" min="1" max="50">
+        <br>
+        <label for="delay">Delay:</label>
+        <input type="number" id="delay" name="delay" min="1" max="10">
+        <br>
+        <button type="button" id="startBtn">Start</button>
+    </form>
+    <p id="timer"></p>
+
+    <script>
+        const startBtn = document.getElementById('startBtn');
+        const repetitions = document.getElementById('repetitions');
+        const delay = document.getElementById('delay');
+        const timer = document.getElementById('timer');
+
+        let interval;
+        let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        startBtn.addEventListener('click', () => {
+            clearInterval(interval);
+            let repCount = parseInt(repetitions.value);
+            const maxDelay = parseInt(delay.value);
+            countdown(repCount, maxDelay);
+        });
+
+        function countdown(repCount, maxDelay) {
+            if (repCount > 0) {
+                let randomDelay = Math.floor(Math.random() * maxDelay) + 1;
+                timer.textContent = `Countdown: ${randomDelay}`;
+                interval = setInterval(() => {
+                    randomDelay--;
+                    timer.textContent = `Countdown: ${randomDelay}`;
+                    if (randomDelay <= 0) {
+                        clearInterval(interval);
+                        playBeep();
+                        countdown(repCount - 1, maxDelay);
+                    }
+                }, 1000);
+            } else {
+                timer.textContent = "Finished!";
+            }
+        }
+
+        function playBeep() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 440; // A4 note frequency
+            gainNode.gain.value = 0.5;
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.start();
+            setTimeout(() => {
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1);
+                oscillator.stop(audioContext.currentTime + 1);
+            }, 100);
+        }
+    </script>
+</body>
+</html>
