@@ -19,6 +19,12 @@
         <label for="delay">Delay:</label>
         <input type="number" id="delay" name="delay" min="1" max="10">
         <br>
+        <label for="sound">Sound:</label>
+        <select id="sound" name="sound">
+            <option value="sound_starter_gun.mp3">Starter Gun</option>
+            <option value="sound_clap.mp3">Clap</option>
+        </select>
+        <br>
         <button type="button" id="startBtn">Start</button>
     </form>
     <p id="timer"></p>
@@ -28,18 +34,19 @@
         const repetitions = document.getElementById('repetitions');
         const delay = document.getElementById('delay');
         const timer = document.getElementById('timer');
+        const soundSelect = document.getElementById('sound');
 
         let interval;
-        let audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
         startBtn.addEventListener('click', () => {
             clearInterval(interval);
             let repCount = parseInt(repetitions.value);
             const maxDelay = parseInt(delay.value);
-            countdown(repCount, maxDelay);
+            const sound = soundSelect.value;
+            countdown(repCount, maxDelay, sound);
         });
 
-        function countdown(repCount, maxDelay) {
+        function countdown(repCount, maxDelay, sound) {
             if (repCount > 0) {
                 let randomDelay = Math.floor(Math.random() * maxDelay) + 1;
                 timer.textContent = `Countdown: ${randomDelay}`;
@@ -48,8 +55,8 @@
                     timer.textContent = `Countdown: ${randomDelay}`;
                     if (randomDelay <= 0) {
                         clearInterval(interval);
-                        playBeep();
-                        countdown(repCount - 1, maxDelay);
+                        playSound(sound);
+                        countdown(repCount - 1, maxDelay, sound);
                     }
                 }, 1000);
             } else {
@@ -57,22 +64,9 @@
             }
         }
 
-        function playBeep() {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-
-            oscillator.type = 'sine';
-            oscillator.frequency.value = 440; // A4 note frequency
-            gainNode.gain.value = 0.5;
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            oscillator.start();
-            setTimeout(() => {
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1);
-                oscillator.stop(audioContext.currentTime + 1);
-            }, 100);
+        function playSound(soundFile) {
+            const audio = new Audio(soundFile);
+            audio.play();
         }
     </script>
 </body>
